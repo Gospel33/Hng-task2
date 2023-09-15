@@ -51,6 +51,7 @@ passport.use(
   )
 );
 
+// Create a person
 app.post(
   '/api/persons',
   passport.authenticate('jwt', { session: false }),
@@ -73,8 +74,59 @@ app.post(
   }
 );
 
-// Implement other CRUD routes for persons here
+// Get all persons
+app.get('/api/persons', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Person.find()
+    .then((persons) => res.json(persons))
+    .catch((err) => res.status(500).json({ error: 'Error fetching persons' }));
+});
 
+// Get a person by ID
+app.get('/api/persons/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const personId = req.params.id;
+
+  Person.findById(personId)
+    .then((person) => {
+      if (!person) {
+        return res.status(404).json({ error: 'Person not found' });
+      }
+      res.json(person);
+    })
+    .catch((err) => res.status(500).json({ error: 'Error fetching person' }));
+});
+
+// Update a person by ID
+app.put('/api/persons/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const personId = req.params.id;
+
+  // Assuming you want to update both name and age
+  const { name, age } = req.body;
+
+  Person.findByIdAndUpdate(personId, { name, age }, { new: true })
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        return res.status(404).json({ error: 'Person not found' });
+      }
+      res.json(updatedPerson);
+    })
+    .catch((err) => res.status(500).json({ error: 'Error updating person' }));
+});
+
+// Delete a person by ID
+app.delete('/api/persons/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const personId = req.params.id;
+
+  Person.findByIdAndRemove(personId)
+    .then((removedPerson) => {
+      if (!removedPerson) {
+        return res.status(404).json({ error: 'Person not found' });
+      }
+      res.json({ message: 'Person removed successfully' });
+    })
+    .catch((err) => res.status(500).json({ error: 'Error removing person' }));
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
@@ -84,5 +136,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-
