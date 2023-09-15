@@ -14,17 +14,18 @@ app.use(bodyParser.json());
 // Generate a random JWT secret key and store it securely (replace this with your preferred method)
 const secretKey = crypto.randomBytes(32).toString('hex');
 
-// Replace 'mongodb://localhost/mydatabase' with your actual MongoDB connection string
-const dbURI = 'mongodb://localhost/mydatabase';
+// Replace this with your actual MongoDB Atlas connection string
+const dbURI = 'mongodb+srv://OliverGospel:Somtochim33@cluster0.0o5nkbd.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
+// Define the Person model and schema
 const personSchema = new mongoose.Schema({
   name: String,
-  age: Number,
+  age: String, // Age is now defined as a string
 });
 
 const Person = mongoose.model('Person', personSchema);
@@ -57,7 +58,7 @@ app.post(
   passport.authenticate('jwt', { session: false }),
   [
     body('name').notEmpty().isString(),
-    body('age').notEmpty().isInt(),
+    body('age').notEmpty().isString(), // Age is now validated as a string
   ],
   (req, res) => {
     const errors = validationResult(req);
@@ -136,3 +137,5 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+
